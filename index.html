@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automatic Meal Planner</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>Automatic Meal Planner</h2>
+        <form id="mealPlanForm" action="index.php" method="POST">
+            <!-- Nutritionist Info -->
+            <label for="nutritionist_id">Nutritionist ID:</label>
+            <input type="text" id="nutritionist_id" name="nutritionist_id" required><br><br>
+            <label for="nutritionist_name">Nutritionist Name:</label>
+            <input type="text" id="nutritionist_name" name="nutritionist_name" required><br><br>
+            <label for="nutritionist_phone">Nutritionist Phone:</label>
+            <input type="text" id="nutritionist_phone" name="nutritionist_phone" required><br><br>
+
+            <!-- Client Info -->
+            <label for="client_name">Client Name:</label>
+            <input type="text" id="client_name" name="client_name" required><br><br>
+            <label for="client_phone">Client Phone:</label>
+            <input type="text" id="client_phone" name="client_phone" required><br><br>
+
+            <!-- Target Dropdown -->
+            <label for="target">Target:</label>
+            <select id="target" name="target" required>
+                <option value="Weight Loss">Weight Loss</option>
+                <option value="Muscle Gain">Muscle Gain</option>
+                <option value="Maintenance">Maintenance</option>
+            </select><br><br>
+
+            <!-- Exercise Intensity Dropdown -->
+            <label for="exercise_intensity">Exercise Intensity:</label>
+            <select id="exercise_intensity" name="exercise_intensity" required>
+                <option value="Low">Low</option>
+                <option value="Moderate">Moderate</option>
+                <option value="High">High</option>
+            </select><br><br>
+
+            <!-- Number of Meals Dropdown -->
+            <label for="meal_count">Number of Meals per Day:</label>
+            <select id="meal_count" name="meal_count" required>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3" selected>3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select><br><br>
+
+            <!-- Diseases Dropdown -->
+            <label for="diseases">Diseases:</label>
+            <select id="diseases" name="diseases[]" multiple required>
+                <option value="Diabetes">Diabetes</option>
+                <option value="Hypertension">Hypertension</option>
+                <option value="Heart Disease">Heart Disease</option>
+                <option value="None">None</option>
+            </select><br><br>
+
+            <!-- Food Search -->
+            <label for="food_search">Search Food:</label>
+            <input type="text" id="food_search" name="food_search" oninput="searchFood()" required>
+            <div id="food_results"></div>
+
+            <label for="calories">Calories:</label>
+            <input type="text" id="calories" name="calories" required><br><br>
+            <label for="diet_options">Diet Options:</label>
+            <input type="text" id="diet_options" name="diet_options" required><br><br>
+
+            <button type="button" onclick="generateMealPlan()">Generate</button>
+            <button type="button" onclick="saveMealPlan()">Save to DB</button>
+            <button type="button" onclick="printMealPlan()">Print Meal Plan</button>
+        </form>
+
+        <?php if ($_SERVER['REQUEST_METHOD'] == 'POST'): ?>
+            <div class="total-nutrition">
+                <h3>Total Nutrition Summary</h3>
+                <p>Total Calories: <?php echo htmlspecialchars($calories); ?></p>
+                <p>Total Protein: <?php echo htmlspecialchars(0); ?> g</p>
+                <p>Total Fat: <?php echo htmlspecialchars(0); ?> g</p>
+                <p>Total Carbs: <?php echo htmlspecialchars(0); ?> g</p>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <script>
+        function generateMealPlan() {
+            alert("Meal plan generated! Please review before saving.");
+        }
+
+        function saveMealPlan() {
+            let formData = new FormData(document.getElementById('mealPlanForm'));
+            fetch('save_meal_plan.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(result => {
+                alert(result);
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function searchFood() {
+            const query = document.getElementById('food_search').value;
+            const resultsDiv = document.getElementById('food_results');
+
+            if (query.length > 2) {
+                fetch(`fetch_food.php?query=${query}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsDiv.innerHTML = data.map(food => `
+                            <div onclick="selectFood('${food.name}')">${food.name}</div>
+                        `).join('');
+                    });
+            } else {
+                resultsDiv.innerHTML = '';
+            }
+        }
+
+        function selectFood(foodName) {
+            document.getElementById('food_search').value = foodName;
+            document.getElementById('food_results').innerHTML = '';
+        }
+
+        function printMealPlan() {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Print Meal Plan</title>
+                        <link rel="stylesheet" href="assets/css/style.css">
+                        <style>
+                            @media print {
+                                body {
+                                    background-color: #fff;
+                                    color: #000;
+                                    margin: 0;
+                                    padding: 20px;
+                                }
+
+                                .container {
+                                    box-shadow: none;
+                                    width: auto;
+                                    margin: 0;
+                                    padding: 20px;
+                                }
+
+                                h2, h3 {
+                                    page-break-after: avoid;
+                                }
+
+                                label {
+                                    font-weight: bold;
+                                }
+
+                                button {
+                                    display: none;
+                                }
+
+                                .total-nutrition {
+                                    page-break-before: always;
+                                    margin-top: 30px;
+                                }
+
+                                table {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                }
+
+                                th, td {
+                                    border: 1px solid #ccc;
+                                    padding: 10px;
+                                    text-align: left;
+                                }
+
+                                th {
+                                    background-color: #28a745;
+                                    color: white;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <h2>Meal Plan</h2>
+                            ${document.getElementById('mealPlanForm').innerHTML}
+                            <div class="total-nutrition">
+                                <h3>Total Nutrition Summary</h3>
+                                <p>Total Calories: ${document.getElementById('calories').value}</p>
+                                <p>Total Protein: 0 g</p>
+                                <p>Total Fat: 0 g</p>
+                                <p>Total Carbs: 0 g</p>
+                            </div>
+                        </div>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+    </script>
+</body>
+</html>
