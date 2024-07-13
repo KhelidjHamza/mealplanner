@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Client History</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="container client-history">
+        <h2>Client History</h2>
+        <form method="GET">
+            <label for="date_from">From Date:</label>
+            <input type="date" id="date_from" name="date_from" value="<?php echo $date_from; ?>">
+            <label for="date_to">To Date:</label>
+            <input type="date" id="date_to" name="date_to" value="<?php echo $date_to; ?>">
+            <button type="submit">Filter</button>
+        </form>
+        <table>
+            <thead>
+                <tr>
+                    <th>Client Name</th>
+                    <th>Phone</th>
+                    <th>Target</th>
+                    <th>Exercise Intensity</th>
+                    <th>Calories</th>
+                    <th>Diet Options</th>
+                    <th>Diseases</th>
+                    <th>Date</th>
+                    <th>Meal Plan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($client_info as $client): ?>
+                <tr>
+                    <td><?php echo $client['name']; ?></td>
+                    <td><?php echo $client['phone']; ?></td>
+                    <td><?php echo $client['target']; ?></td>
+                    <td><?php echo $client['exercise_intensity']; ?></td>
+                    <td><?php echo $client['calories']; ?></td>
+                    <td><?php echo $client['diet_options']; ?></td>
+                    <td><?php echo $client['diseases']; ?></td>
+                    <td><?php echo $client['plan_created_at']; ?></td>
+                    <td><?php echo $client['meal_plan']; ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
